@@ -40,7 +40,7 @@ The second dataset we used, `ratings`, contains a subset (731,927) of all user s
 | `rating`	 | Rating given |
 | `review` | Review text |
 
-# Data Cleaning
+# Data Cleaning and Exploratory Data Analysis
 
 While useful, the dataset is split into multiple parts. To further facilitate simple analysis and modeling, we will combine the information into one usable and analyzable dataset. To do so, the following transformations were performed, resulting in one homogenous `recipe` DataFrame.
 
