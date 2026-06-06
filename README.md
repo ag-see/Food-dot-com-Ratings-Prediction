@@ -114,7 +114,7 @@ From here, special attention will be given to  the following columns
 
 <iframe
  src="assets/uni-calories.html"
- width="900"
+ width="100%"
  height="600"
  frameborder="0">
 </iframe>
@@ -125,7 +125,7 @@ For this analysis, we wanted to carefully analyze the distribution of caloric co
 
 <iframe
  src="assets/bivariate-rating-calorie.html"
- width="900"
+ width="100%"
  height="600"
  frameborder="0">
 </iframe>
@@ -177,7 +177,7 @@ All three p-values are essentially 0, meaning we reject the null hypothesis that
 
 <iframe
  src="assets/nmar-cooking.html"
- width="900"
+ width="100%"
  height="600"
  frameborder="0">
 </iframe>
