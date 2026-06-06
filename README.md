@@ -169,7 +169,15 @@ Additional information about the user itself could be helpful in determining bet
 
 We analyzed the missingness of `avg_rating`, which has 2,609 missing values. A recipe has a missing `avg_rating` if no users have rated it.
 
-We tested whether the missingness of `avg_rating` depends on `calories`, `n_ingredients`, and `minutes` using permutation tests with the difference in means as our test statistic.
+We tested whether the missingness of `avg_rating` depends on `calories`, `n_ingredients`, and `minutes` using permutation tests, with n = 1000.
+
+**Null Hypothesis: **m The missingness of `avg_rating` does not depend on the variable being tested. Recipes with ratings and recipes that are not rated come from the same distribution.
+
+**Alternative Hypothesis: ** The missingness of `avg_rating` depends on the variable being tested. Recipes with ratings and recipes that are not rated come from different distributions depending on the tested variable.
+
+**Test Statistic: ** The absolute difference in means between recipes with `avg_rating` and without `avg_rating`.
+
+**Results** 
 
 | Column | Observed Difference | P-value |
 |--------|-------------------|---------|
@@ -177,7 +185,7 @@ We tested whether the missingness of `avg_rating` depends on `calories`, `n_ingr
 | n_steps | 1.493 | 0.0000 |
 | calories | 87.859 | 0.0000 |
 
-All three p-values are essentially 0, meaning we reject the null hypothesis that the missingness of `avg_rating` is independent of these columns. Recipes with missing ratings tend to have higher calories, more ingredients, and longer prep times. This suggests the missingness of `avg_rating` is **MAR** — dependent on other observed columns.
+All three p-values are essentially 0, meaning we reject the null hypothesis that the missingness of `avg_rating` is independent of these columns. Recipes with missing ratings tend to have higher calories, more ingredients, and longer prep times. This suggests the missingness of `avg_rating` is **MAR**, dependent on the above observed columns. Below is a graph of rating missingness depending on cooking time.
 
 <iframe
  src="assets/nmar-cooking.html"
@@ -186,13 +194,37 @@ All three p-values are essentially 0, meaning we reject the null hypothesis that
  frameborder="0">
 </iframe>
 
-Recipes with missing ratings tend to require more preparation time and contain more calories, suggesting the missingness mechanism is more consistent with MAR than MCAR.
-
 ---
 
-**Null Hypothesis:** High-protein recipes (above median protein content) and low-protein recipes (below median protein content) have the same average rating, and any observed difference is due to random chance.
+For another missingness test, we decided to test whether the missingness of `avg_rating` depended on the missingness of the `description` column. We created a boolean colunmn named `description_missing` to create the desired groups of missing and present descriptions, and performed a permutation test with n = 1000.
 
-**Alternative Hypothesis:** High-protein recipes are, on average, rated 5 stars, compared to lower protein recipes
+**Null Hypothesis:** The missingness of `avg_rating` is independent of `description_missing`. Recipes with and without missing descriptions are equally likely to have a missing `avg_rating`.
+
+**Alternative Hypothesis:** The missingness of avg_rating depends on description_missing. Recipes with and without missing descriptions have different probabilities of having a missing average rating.
+
+**Test Statistic:** The absolute difference in proportion of missing descriptions,between recipes with  `avg_rating` and without `avg_rating`.
+
+**Results** 
+| Observed Difference | P-value |
+| 0.001|0.2890|
+
+<iframe
+ src="assets/missingness-description.html"
+ width="100%"
+ height="600"
+ frameborder="0">
+</iframe>
+
+With a p value 0.2890 > 0.05, we fail to reject the null hypothesis. No evidence suggests a missing `avg_rating` entry is dependent on whether a `description` is missing.
+
+---
+# Hypothesis Testing
+
+We wanted to further analyze one of the nutrients present in our dataset. `protein` contains the percentage daily value protein content within a given Food.com recipe. Since protein content is often related to healthiness (More physically active users may need to supplement their nutrition with more protein), we wanted to see whether an above average protein recipe is more favorable to being given Five Stars. 
+
+**Null Hypothesis:** High-protein recipes (above median protein content) and low-protein recipes (below median protein content) have the same five star rating assignment. 
+
+**Alternative Hypothesis:** High-protein recipes have a higher proportion of 5 star average ratings compared to lower protein recipes.
 
 **Test Statistic:** Difference in proportion of 5 star ratings
 
@@ -202,31 +234,46 @@ Recipes with missing ratings tend to require more preparation time and contain m
 - Observed difference: -0.036
 - P-value: 1
 
-**Conclusion:** We fail to reject the null hypothesis. The p-value of 1 is far above our significance level of 0.05. In fact, the observed difference is slightly negative, meaning high-protein recipes are not rated 5 stars, on average. There is no statistically significant evidence that higher-protein recipes receive 5 star ratings compared to lower-protein recipes.
+<iframe
+ src="assets/protein-hypothesis-test.html"
+ width="100%"
+ height="600"
+ frameborder="0">
+</iframe>
+
+**Conclusion:** We fail to reject the null hypothesis. The p-value of 1 is far above our significance level of 0.05. In fact, the observed difference is slightly negative, meaning high-protein recipes are not rated 5 stars, on average. There is no statistically significant evidence that higher-protein recipes receive 5 star ratings compared to lower-protein recipes. 
+
+The above graph actually proves the opposite, and a subsequent permutation test was performed with the adjusted alternate hypothesis *"High protein recipes have a lower proportion of five star ratings compared to lower protein recipes"*. This requires a sign change, and the results are given below. 
+
+**Results:**
+- Observed difference: -0.036
+- P-value: 0
+
+The above findings, along with the graph, are consistent with the conclusion of the reformed null hypothesis.
 
 ---
 
 # Framing a Prediction Problem
 
-The prediction task is:
+The prediction task we set out was:
 
 > **Can we predict whether a recipe will achieve a perfect five-star average rating?**
 
 This is a **binary classification problem**.
 
-### Response Variable
+## Response Variable
 
 `five_star`
 
-We chose this because understanding what makes a recipe five stars is directly useful for recommending and developing recipes people will enjoy.
+We chose this because understanding what makes a recipe five stars is directly useful for recommending and developing recipes people will enjoy. 
 
-### Evaluation Metric
+## Evaluation Metric
 
 **F1-score**
 
 The dataset contains more five-star recipes than non-five-star recipes, making F1-score a better measure than accuracy because it balances precision and recall.
 
-### Features Available at Prediction Time
+## Features Available at Prediction Time
 
 Only information available when a recipe is submitted was used:
 
@@ -244,7 +291,7 @@ User reviews and ratings were excluded because they occur after publication.
 
 # Baseline Model
 
-The baseline model was a Logistic Regression classifier using only quantitative features:
+For our baseline model, we decided to use 10 quantitative features we extracted from the dataset.
 
 * calories
 * minutes
@@ -257,9 +304,9 @@ The baseline model was a Logistic Regression classifier using only quantitative 
 * saturated_fat
 * carbohydrates
 
-All features were quantitative and standardized using `StandardScaler`.
+All features were then standardized using StandardScaler. We then split the dataset into testing and training dataset, with split 80/20. After fitting the model, the below metrics were retrieved. 
 
-### Performance
+## Performance
 
 | Metric    | Score |
 | --------- | ----- |
@@ -267,36 +314,48 @@ All features were quantitative and standardized using `StandardScaler`.
 | Precision | 0.62  |
 | Recall    | 0.46  |
 
+<iframe
+ src="assets/baseline-confusion.html"
+ width="100%"
+ height="600"
+ frameborder="0">
+</iframe>
+
 The baseline model performs poorly. With an F1 of 0.53, the model only correctly predicts a 5 star recipe only half the time. Analyzing the quantitative features we had used on this model, we had only contributed measured features of the food recipe. We have still yet to touch on more abstract features like `tags`, preferential descriptive features like `ingredients`, time based measurements like `submitted_year`, all descriptions that can better capture patterns like general food.com user preferences, labels, membership between categories like "sweets", and larger societal trends towards food. All of these are avenues we plan to explore in the final model.
 
 ---
 
 # Final Model
 
-The final model extended the baseline using both engineered and textual features.
-
-### Added Features
 
 For the final model, we include all the numeric features, as well as features we engineered.
 
-### `submitted_year`
+## `submitted_year`
 
 During testing, we found that including datetime introduced too many different concentrations of data points, making prediction harder. We decided to simplify the feature further, engineering `submitted_year` to include a temporal aspect of the dataset. Since tastes and preferences change throughout the years, we were interested in if we could perform efficient classification for data found in previous years, that may or may not have an average rating assigned to it for some reason or another. This, we found, could simulate past trends in Food.com recipes. Secondly, we were interested in later analyzing fairness between older and newer recipes.
 
-### `ingredient_text`
+## `ingredient_text`
 The original `ingredients` column contains the recipe's ingredients, contained in a list. In recent years, we observed outside of the dataset that due to the increase in short form content, 'trendy' recipes like Tiramisu, Dubai Chocolate Cookies, and others would have signature ingredients that are the main focus of the recipe. Inspired by this, we wanted to engineer the feature further, hypothesizing that some popular ingredients may improve model accuracy, both in past and present prediction. To accomplish this, we found that preprocessing the ingredients by replacing spaces with underscores, then combining the entire ingredient list into a string provides the equivalent of a document. This allowed us to perform TF-IDF on the dataset, defining each unique preprocessed recipe as a tag.
 
-### `tag_text`
+## `tag_text`
 The `tag` column contains the recipe's user submitted tags, contained in a list. Tags functionally serve to distinguish a recipe by giving it short descriptors, aiding users and administrators in finding similar recipes and identifying a recipe's more abstract descriptors and features. Because of this, transforming the list into a string document and performing TF-IDF, we believed, would provide further refinement into giving the model insight into a recipe's abstracted features for classification purposes.
 
-### Model Selection
+## Model Selection
 
-The final model used:
+To summariwsehe final model used:
 
 * Logistic Regression
 * TF-IDF feature extraction
-* SelectKBest feature selection
-* GridSearchCV hyperparameter tuning
+
+## Feature Selection
+
+SelectKBest was leveraged to improve on model performance. Because the TF-IDF vectorizer was called, the interim dataset will contain over hundreds of features at a time. To prune features that add more noise than signal, SelectKBest will perform ANOVA F-tests, calculate an F-score for each feature, and only keep the highest scoring features. This will hopefully improve model performance, as well as simplify the model further.
+
+
+## Hyperparameter Tuning
+To facilitate better results, GridSearchCV will be used to test combinations of hyperparameters. Here, we call it to test different C strengths and K features. All combinations of the provided K number of features and C regularization strengths will be leveraged to find the most optimal and performant model on the training dataset.
+
+After running GridSearchCV, the following parameters were found to be optimal.
 
 Best parameters:
 
@@ -305,7 +364,7 @@ kbest__k = 300
 model__C = 10
 ```
 
-### Performance
+## Performance
 
 | Metric    | Baseline | Final |
 | --------- | -------- | ----- |
@@ -313,7 +372,14 @@ model__C = 10
 | Precision | 0.62     | 0.66  |
 | Recall    | 0.46     | 0.56  |
 
-The addition of ingredient and tag information substantially improved performance, indicating that textual recipe information contains meaningful signals about recipe quality.
+<iframe
+ src="assets/final-model-confusion.html"
+ width="100%"
+ height="600"
+ frameborder="0">
+</iframe>
+
+Across the board, the final model shows improvement in both F1, precisison and recall, indicating the text features engineered from tag and ingredient information meaningfully improved performance. Most notably, recall increased the most, jumping from 0.46 to 0.56, implying a better identification of five-star recipes. Precision also improved, which implies that not only did the recall improvement not come at the cost of higher false negatives, but the model actually reduced false negative rates as well.
 
 ---
 
@@ -321,35 +387,43 @@ The addition of ingredient and tag information substantially improved performanc
 
 To evaluate whether model performance differs across groups, recipes were separated into:
 
-*Low-calorie recipes: calories at or below the median calorie count (305.4 calories)
-High-calorie recipes: calories above the median calorie count
+**Older recipes:** Recipes submitted at or before the median submission year (2009)
+**Newer recipes:** Recipes submitted after the median submission year
 
-This grouping was chosen because calorie content is one of the primary nutritional features used by the model and may influence prediction behavior.
+This grouping was chosen because Food.com has a large spread between its older and newer recipes.
 
-### Evaluation Metric
+## Evaluation Metric
 
-We compared the model's:
+We compared the model's F1 score, across the groups, balancing both precision and recall.
 
-Precision
-Recall
-F1 Score
+## Null Hypothesis
 
-across both groups. Ideally, similar performance across groups would suggest that the model is not disproportionately favoring one calorie category over another.
+The model is equally precise with respect to recipe age. Its F1 score is about the same, and any observed difference is due to random chance.
 
-### Null Hypothesis
+## Alternative Hypothesis
 
-The model is equally precise for low-calorie and high-calorie recipes. Any observed difference is due to random chance.
+The model is unfair with respect to recipe age. Its F1 score differs between older and newer recipes.
 
-### Alternative Hypothesis
+## Statistic
+The permutation test of 1000 permutations was performed using absolute difference between F1 scores between older and newer recipes. 
 
-The model is less precise for high-calorie recipes.
+## Results
 
-### Method
+| Group           | F1 Score  |
+| Older Recipes   | 0.496    |
+| Newer Recipes   | 0.728    |
 
-A permutation test was performed using the difference in precision between groups as the test statistic.
 
-### Conclusion
+| Observed Difference  | 0.232 |
+| p-value | 0.0|
 
-The results suggest that the classifier does not exhibit substantial bias toward either high-calorie or low-calorie recipes. While minor performance differences are expected due to natural variation in the data, there is no evidence that one calorie group is systematically disadvantaged by the model.
+<iframe
+ src="assets/recipe-age.html"
+ width="100%"
+ height="600"
+ frameborder="0">
+</iframe>
 
-However, this analysis is limited to calorie-based groups. Future work could examine fairness across other recipe characteristics, such as preparation time, number of ingredients, cuisine tags, or dietary categories. Additionally, because recipe ratings reflect subjective user preferences, differences in group performance may arise from underlying rating patterns rather than model bias alone.
+The observed difference in F1 scores between older and newer recipes is substantially larger than would be expected under the null hypothesis. Because the p-value is effectively 0, we reject the null hypothesis at the 0.05 significance level.
+
+This suggests that the model performs significantly better on newer recipes than on older recipes. Therefore, there is evidence that model performance is not consistent across recipe age groups, indicating a potential fairness concern with respect to recipe submission year.
