@@ -1,27 +1,21 @@
-# Food.com Five Star Recipe Analysis:
+# "What makes the Gold Standard?": Food.com Five Star Recipe Analysis and Prediction:
 
 **Author:** Adrianne See, Aarman Sachdev
 
 ---
 # Overview
 
-This Data Science project explores the effectiveness of predictive models in understanding a 'Five Star Rating' for any given user recipe from Food.com.
+This data science project explores the effectiveness of predictive models in understanding a 'Five Star Rating' for any given user recipe from Food.com.
 
 # Introduction
 
-Food.com is one of the largest food preparation websites on the Internet, hosting over 500,000 user made recipes from around the world, as well as feedback, reviews and images of other users making them at home. Launching in 2017 to great success, its recipes have since garnered an active community of home cooks looking to enjoy a good recipe. Food.com is not home to just home users, though, as many celebrities, chefs, and popular companies have both derived and official recipes published as well. 
+Food.com is one of the largest food related websites on the Internet. Since 1999, it has served as a hub for home cooks, celebrities, chefs and companies to publish and share recipes from across the world. On a daily basis, The recipes are primarily rated through a five star system, and currently, over 500,000 user made recipes from around the world are accessible, including user feedback, reviews and images of other users making them at home.
 
-Because of this, understanding what drives a 'Five Star Rating' becomes highly important. From promotional avenues, to publicity stunts, to establishing a mini community, individuals and businessses can serve to profit from releasing well received recipes on this website. Numerical insights can also help home cooks and food platforms recommend meals that people will actually enjoy. Depending on factors such as nutrition content, calorie density, and simplicity of preparation, general trends in food preferences can also be discovered. Finally, trends towards ingredients or tags can help any recipe maker promote or create recipes that are timely and well received by users.
+Because of the social media aspect of the website, understanding what drives a 'Five Star Rating' becomes highly valuable in many ways. In particular, we wanted to investigate **What characteristics are associated with five-star recipes on Food.com, and can recipe metadata be used to predict whether a recipe will receive a perfect rating?*. Recipe creators, food platforms, and recommender systems can benefit from understanding meals that people enjoy. Depending on factor such as nutritional content, calorie density, and ease of creation, and ingredient makeup, general trends in food preferences can also be discovered, at the very least, in the online home cook community. Finally, any discoveries on tags tags, assigned by recipe creators, can assist in effectively categorizing and describing recipes, as well as reveal trends that may be otherwise hard to parse.
 
-This project investigates the following question:
+To perform this analysis, we analyzed a subset user recipes and user ratings from Food.com. Each recipe includes nutritional information, preparation details, and user-submitted ratings. We cleaned several columns and expanded their data (`calories`, `total_fat`, `submitted_year`) into separate columns, as well as extracted our derived feature, `five_star`, into its own target column to better capture our desired group. 
 
-> **What characteristics are associated with five-star recipes on Food.com, and can recipe metadata be used to predict whether a recipe will receive a perfect rating?**
-
-To perform this analysis, this project analyzes a subset of  user recipes and  user ratings from Food.com. Each recipe includes nutritional information, preparation details, and user-submitted ratings. 
-
-To perform this analysis, this project analyzes a subset of  user recipes and  user ratings from Food.com. Each recipe includes nutritional information, preparation details, and user-submitted ratings. 
-
-The first dataset we want to leverage, `recipe`, contains a subset (83,782) of all user submitted recipes uploaded to Food.com. Each entry represents a unique recipe submitted and viewable on the website, and contains the following features:
+The first dataset we used, `recipe`, contains a subset (83,782) of all user submitted recipes uploaded to Food.com. Each entry represents a unique recipe submitted and viewable on the website, and contains the following features:
 
 | Column Name | Description | 
 |--------|-------------------|
@@ -36,7 +30,7 @@ The first dataset we want to leverage, `recipe`, contains a subset (83,782) of a
 | `steps` | Text for recipe steps, in order |
 | `description` | User-provided description |
 
-The second dataset we want to leverage, `ratings`, contains a subset (731,927) of all user submitted ratings uploaded to Food.com. Each entry represents a unique review for a unique recipe on the website, and contains the following features:
+The second dataset we used, `ratings`, contains a subset (731,927) of all user submitted ratings uploaded to Food.com. Each entry represents a unique review for a unique recipe on the website, and contains the following features:
 
 | Column Name | Description | 
 |--------|-------------------|
@@ -46,19 +40,9 @@ The second dataset we want to leverage, `ratings`, contains a subset (731,927) o
 | `rating`	 | Rating given |
 | `review` | Review text |
 
-**Relevant Columns:**
-- `calories`: extracted from the `nutrition` column, represents total calories per serving
-- `avg_rating`: average user rating for each recipe (1-5 scale)
-- `n_steps`: number of steps in the recipe
-- `n_ingredients`: number of ingredients
-- `minutes`: total preparation time
-- `tags`: user assigned tags to describe recipe
-- `ingredients`: Ingredients
----
-
 # Data Cleaning
 
-While useful, the dataset is split into multiple parts. To simplify analysis and prediction, we will combine the information into one usable and analyzable dataset. To do so, teh following transformations were done.
+While useful, the dataset is split into multiple parts. To further facilitate simple analysis and modeling, we will combine the information into one usable and analyzable dataset. To do so, the following transformations were performed, resulting in one homogenous `recipe` DataFrame.
 
 1. **Merged recipes and interactions:** We performed a left merge on the `recipes` dataset with the `interactions` dataset, on `id` for recipes and `recipe_id` with interactions. This was done to associate each recipe with a rating column.
 
@@ -76,7 +60,7 @@ While useful, the dataset is split into multiple parts. To simplify analysis and
 
 8. **Create Target Column, ``five_star``:** The target prediction is the group of ratings that are equal to 5, or 5.0. A simple boolean mask was performed on `avg_rating` to produce the target column.
 
-The resulting main DataFrame, Recipes, now has 83782 entries and 22 features. Below is a table of all the columns
+After the following Data Cleaning, `recipes`, now has 83782 entries and 22 features, describing each recipe with its appropriate `five_star` binary classifier column. Below is a table describing the resulting data types in each column of our dataset.
 
 | Column | Data Type |
 |----------|----------|
@@ -103,7 +87,7 @@ The resulting main DataFrame, Recipes, now has 83782 entries and 22 features. Be
 | submitted_year | int32 |
 | five_star | bool |
 
-From here, special attention will be given to  the following columns
+From here, special attention will be given to the following columns
 
 - `minutes`
 - `tags`
@@ -112,6 +96,8 @@ From here, special attention will be given to  the following columns
 
 ## Univariate Analysis
 
+For a univariate analysis, we wanted to carefully analyze the distribution of caloric count in a recipe. The histogram below shows the distribution of calories across all recipes from our sample of Food.com.
+
 <iframe
  src="assets/uni-calories.html"
  width="100%"
@@ -119,9 +105,28 @@ From here, special attention will be given to  the following columns
  frameborder="0">
 </iframe>
 
-For this analysis, we wanted to carefully analyze the distribution of caloric count in a recipe. The histogram below shows the distribution of calories across all recipes from our sample of Food.com. The good amount of the recipes (75.1%), contain strictly less than 500 calories, and a majority (94.2%) contain strictly less than 1000 calories. The graph is also right skewed, indicating that increasingly fewer recipes on Food.com have higher caloric count. We found it also useful to call the describe function on the 'calories' column, whose results are stored below. Of note is the effect of the skew, with the mean (429.92 calories) sitting above the median (305.4 calories), reinforcing the conclusion of the skewed nature of the dataset.
+A large amount of recipes (75.1%), contain strictly less than 500 calories, and the majority (94.2%) contain strictly less than 1000 calories. The graph is also right skewed, indicating that increasingly fewer recipes on Food.com have higher caloric count. This suggests that recipes on Food.com are generally modest to moderate in calorie content, with higher calorie recipes being outliers.
+
+A table is provided below, containing more numeric summaries of the `calorie` column. This table is an augmented output of the useful `pd.DataFrame.describe()` function, which provided summary statistics of teh column.
+
+| Statistic | Calories |
+|------------|----------:|
+| Count | 83,782 |
+| Mean | 429.93 |
+| Standard Deviation | 636.63 |
+| 0th Percentile (Minimum) | 0.00 |
+| 25th Percentile | 171.33 |
+| 50th Percentile (Median) | 305.40 |
+| 75th Percentile | 498.70 |
+| 100th Percentile (Maximum) | 45,609.00 |
+
+Of note is the difference of the mean and the median. The mean sits at 429.93 calories, above the median (305.4 calories) at a rate of 0.2 times the Standard Deviation. This indicates a right skew is present on the `calorie` column. 
 
 ## Bivariate Analysis
+
+
+
+For a Bivariate Analysis, we wanted to compare the relationship between recipe calorie content and the likelihood of it to receive, an average of a five-star rating. The bar plot below compares the proportion of recipes in each group (below median calories, above median calories) that achieved a five-star average rating. 
 
 <iframe
  src="assets/bivariate-rating-calorie.html"
@@ -130,24 +135,25 @@ For this analysis, we wanted to carefully analyze the distribution of caloric co
  frameborder="0">
 </iframe>
 
-For our Bivariate Analysis, we wanted to compare the ratings of lower and higher caloric recipes. The boxplot compares recipe ratings across low-calorie and high-calorie recipes using the median calorie count as a threshold. Both groups exhibit very similar rating distributions. Calorie content alone appears to have limited predictive power for determining whether a recipe receives a perfect rating.
+With a proportional difference of ~0.01, both groups end up having a similar proportion of five-star recipes. This suggests that calorie content alone does not appear to be a strong predictor for determining recipe success on Food.com. This also indicate that more features may need to be included in future predictive models.
 
 ## Interesting Aggregates
 
-The table shows the distribution of number of ingredients per recipe, as well as the resulting average calories, sugar, and average rating for each ingredient count. Recipes with only 1 ingredient tend to have much higher calories (714.65) and higher ratings (4.86) on average. As the number of ingredients increases, both calories and ratings slightly decrease. Interestingly, recipes with very few ingredients tend to receive slightly higher ratings. This may reflect the pattern that recipes with less ingredients may be both more calorie-dense and reviewed more ratings. Sugar follows a roughly decreasing trend, while protein seems to increase as ingredients increase.
+For aggregation, we wanted to view how ingredient count affected columns like `calories`, `total_fat`, and `avg_rating`. The table below groups recipes by ingredient count and summarizes each group using the above metrics. As for the summary statistic, reflecting a pattern of skewedness being found in multiple metrics, both mean and median were included to check for further skews.
 
-| n_ingredients | calories | total_fat | sugar | sodium | protein | avg_rating |
-|--------------:|---------:|----------:|------:|-------:|--------:|-----------:|
-| 1  | 714.65 | 0.91 | 1.04 | 0.26 | 0.25 | 4.86 |
-| 2  | 331.98 | 0.26 | 0.80 | 0.53 | 0.18 | 4.69 |
-| 3  | 306.11 | 0.22 | 0.78 | 0.23 | 0.16 | 4.66 |
-| 4  | 336.01 | 0.24 | 0.87 | 0.18 | 0.20 | 4.63 |
-| 5  | 347.80 | 0.25 | 0.78 | 0.25 | 0.22 | 4.65 |
-| 6  | 355.89 | 0.26 | 0.71 | 0.23 | 0.24 | 4.63 |
-| 7  | 391.13 | 0.30 | 0.64 | 0.28 | 0.29 | 4.62 |
-| 8  | 387.03 | 0.30 | 0.55 | 0.26 | 0.31 | 4.61 |
-| 9  | 422.50 | 0.32 | 0.62 | 0.27 | 0.33 | 4.61 |
-| 10 | 449.82 | 0.35 | 0.63 | 0.29 | 0.36 | 4.61 |
+
+| n_ingredients | calories (mean) | calories (median) | total_fat (mean) | total_fat (median) | avg_rating (mean) | avg_rating (median) |
+|--------------:|----------------:|------------------:|-----------------:|-------------------:|------------------:|--------------------:|
+| 1  | 714.65 | 200.35 | 0.91 | 0.03 | 4.86 | 5.0 |
+| 2  | 331.98 | 148.10 | 0.26 | 0.03 | 4.69 | 5.0 |
+| 3  | 306.11 | 166.70 | 0.22 | 0.06 | 4.66 | 5.0 |
+| 4  | 336.01 | 195.60 | 0.24 | 0.09 | 4.63 | 5.0 |
+| 5  | 347.80 | 224.20 | 0.25 | 0.13 | 4.65 | 5.0 |
+| 6  | 355.89 | 245.55 | 0.26 | 0.15 | 4.63 | 5.0 |
+| 7  | 391.13 | 272.30 | 0.30 | 0.18 | 4.62 | 5.0 |
+| 8  | 387.03 | 290.90 | 0.30 | 0.20 | 4.61 | 5.0 |
+| 9  | 422.50 | 306.55 | 0.32 | 0.21 | 4.61 | 5.0 |
+| 10 | 449.82 | 322.00 | 0.35 | 0.22 | 4.61 | 5.0 |
 
 ---
 
