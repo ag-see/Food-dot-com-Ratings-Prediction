@@ -124,9 +124,7 @@ Of note is the difference of the mean and the median. The mean sits at 429.93 ca
 
 ## Bivariate Analysis
 
-
-
-For a Bivariate Analysis, we wanted to compare the relationship between recipe calorie content and the likelihood of it to receive, an average of a five-star rating. The bar plot below compares the proportion of recipes in each group (below median calories, above median calories) that achieved a five-star average rating. 
+For a Bivariate Analysis, we wanted to compare the relationship between recipe calorie content and the likelihood of it to receive a five-star average rating. The bar plot below compares the proportion of recipes in each group (below median calories, above median calories) that achieved a five-star average rating.
 
 <iframe
  src="assets/bivariate-rating-calorie.html"
@@ -163,9 +161,9 @@ For aggregation, we wanted to view how ingredient count affected columns like `c
 
 The `description` column contains 70 missing values.
 
-e believe this is likely NMAR, as recipe contributors who put less effort into their submission may skip writing a description, and those same contributors may also submit lower quality recipes. The missingness is therefore related to the actual value of the description itself (its quality/existence), not just other observed columns.
+We believe this is likely **NMAR** (*Not Missing At Random*). A plauusible explanation we landed on was that as users who do not provide a description have behavioral patterns that are outside of the dataset. A hypothetical example would be users who put less effort into their recipe submissions may not necessarily write a descrioption. Because the probability of missigness in this situation may be related to the missing value itself, the mechanism in this scenario is very likely NMAR.
 
-Additional information such as contributor account age or posting history could potentially explain this missingness mechanism.
+Additional information about the user itself could be helpful in determining between NMAR and **MAR** (*Missing At Random*). Because our current feature set does not tell us much about the user's behavioral patterns, especially within Food.com, desirable features such as activity metrics, previous submissions, or follower count, may explain why users might not provide recipe descriptions. Of note is that data like this does exist and is acessible on Food.com, albeit this does raise privacy concerns. If such data was accessible, then missignes could be re-evaluated further and possibly even be identified as MAR rather than NMAR.
 
 ## Missingness Dependency
 
